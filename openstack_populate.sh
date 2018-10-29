@@ -22,6 +22,14 @@ instance_flavor="m1.medium"
 instance_image="CentOS-7"
 instance_count_number="2"
 
+flavor_name="m1.tiny"
+flavor_vcpu=1
+flavor_ram=1
+flavor_disk=10
+
+image_name="xenial"
+image_file="xenial-server-cloudimg-amd64-disk1.img"
+
 function create_net () {
         echo "# Create net"
         if ! openstack network list | grep -q "\<${net_name}\>" ; then
@@ -31,6 +39,29 @@ function create_net () {
 
         net_id="$(openstack network list |  awk '($4 == "'${net_name}'"){print $2}')"
         echo "=>  net_id : $net_id"
+}
+
+function image_create () {
+	echo "# Create image"
+        if ! openstack image list | grep -q "\<${image_name}\>" ; then
+		echo "Create image ${image_name}"
+		openstack image create --disk-format qcow2 --container-format bare  --public --file ${image_file} ${image_name}
+	fi
+
+        image_id="$(openstack imagework list |  awk '($4 == "'${image_name}'"){print $2}')"
+        echo "=>  image_id : $image_id"
+
+}
+
+function flavor_create () {
+        echo "# Create flavor"
+	if ! openstack flavor list  | grep -q "\<${flavor_name}\>"; then 
+		echo "Create flavor ${flavor_name}"
+		openstack flavor create --ram ${flavor_ram} --disk ${flavor_disk} --vcpus ${flavor_vcpu} ${flavor_name}
+	fi
+	flavor_id="$(openstack flavor list | awk '($4 == "'${flavor_name}'"){print $2}')"
+	echo "==> flavor_id : ${flavor_id}"
+
 }
       
     
